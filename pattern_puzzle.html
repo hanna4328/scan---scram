@@ -72,6 +72,7 @@
         ];
         let currentLevel = 0;
         let userPattern = [];
+        let inputEnabled = false;
         let grid = document.getElementById("grid");
         
         function generateGrid(size) {
@@ -87,6 +88,7 @@
         }
         
         function highlightSequence() {
+            inputEnabled = false;
             let i = 0;
             function highlightNext() {
                 if (i < levels[currentLevel].length) {
@@ -97,6 +99,8 @@
                         i++;
                         highlightNext();
                     }, 800);
+                } else {
+                    inputEnabled = true;
                 }
             }
             highlightNext();
@@ -104,11 +108,17 @@
         
         function startLevel() {
             userPattern = [];
-            generateGrid(Math.max(...levels[currentLevel]));
+            // For levels 0 and 1, always use a 3x3 grid (9 boxes)
+            if (currentLevel < 2) {
+                generateGrid(9);
+            } else {
+                generateGrid(Math.max(...levels[currentLevel]));
+            }
             setTimeout(highlightSequence, 1000);
         }
         
         function selectBox(box, number) {
+            if (!inputEnabled) return;
             if (userPattern.length < levels[currentLevel].length) {
                 userPattern.push(number);
                 if (levels[currentLevel][userPattern.length - 1] === number) {
@@ -136,3 +146,4 @@
     </script>
 </body>
 </html>
+
