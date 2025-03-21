@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTML Structure Puzzle</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #f0f8ff, #dbeafe);
+      font-family: Arial, sans-serif;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    /* Expected rendered output container */
+    .expected-output {
+      background: #fff;
+      border: 2px solid #bbb;
+      border-radius: 10px;
+      padding: 20px;
+      width: 90%;
+      max-width: 1000px;
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+      text-align: left;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    .expected-output h2 {
+      margin-top: 0;
+    }
+    /* Puzzle container: contains the incomplete source and draggable tags */
+    .puzzle-container {
+      display: flex;
+      gap: 30px;
+      width: 90%;
+      max-width: 1000px;
+    }
+    .structure-container, .draggables-container {
+      background: #fff;
+      padding: 20px;
+      border: 2px solid #bbb;
+      border-radius: 10px;
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+    }
+    .structure-container {
+      width: 60%;
+      text-align: left;
+      font-family: monospace;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .structure-container pre {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+    /* Drop zones styling */
+    .dropzone {
+      display: inline-block;
+      min-width: 80px;
+      border: 2px dashed #888;
+      background: #f9f9f9;
+      color: #888;
+      padding: 2px 4px;
+      margin: 0 4px;
+      vertical-align: middle;
+      transition: background 0.3s, border-color 0.3s, transform 0.2s;
+    }
+    .dropzone.correct {
+      background: #90ee90;
+      border-color: #008000;
+      color: #008000;
+    }
+    .draggables-container {
+      width: 30%;
+      text-align: center;
+    }
+    .draggable {
+      background: #add8e6;
+      border-radius: 5px;
+      padding: 10px 15px;
+      margin: 10px;
+      cursor: grab;
+      display: inline-block;
+      transition: transform 0.2s ease-in-out, background 0.3s ease;
+    }
+    .draggable:active {
+      transform: scale(1.1);
+    }
+    .instructions {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+    .submit-btn {
+      padding: 10px 20px;
+      background: #27ae60;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+  <h1>HTML Structure Puzzle</h1>
+  <p class="instructions">
+    Below is the final rendered website (what you should achieve). 
+    Now complete the incomplete HTML code by dragging the correct tags into the placeholders.
+  </p>
+  
+  <!-- Expected Rendered Output -->
+  <div class="expected-output">
+    <h2>Expected Rendered Output:</h2>
+    <pre>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My Awesome Site&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Welcome to My Site!&lt;/h1&gt;
+    &lt;p&gt;This is a sample paragraph to demonstrate &lt;b&gt;HTML&lt;/b&gt; structure.&lt;/p&gt;
+    &lt;hr&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Item One&lt;/li&gt;
+      &lt;li&gt;Item Two&lt;/li&gt;
+      &lt;li&gt;Item Three&lt;/li&gt;
+    &lt;/ul&gt;
+    &lt;table border=&quot;1&quot;&gt;
+      &lt;tr&gt;
+        &lt;th&gt;Name&lt;/th&gt;
+        &lt;th&gt;Age&lt;/th&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Alice&lt;/td&gt;
+        &lt;td&gt;30&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+    </pre>
+  </div>
+  
+  <!-- Puzzle Container -->
+  <div class="puzzle-container">
+    <!-- Left: Incomplete HTML code with placeholders for drop zones -->
+    <div class="structure-container">
+      <h2>Complete the HTML Code</h2>
+      <pre id="code-snippet">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  [DROPZONE1]
+    &lt;title&gt;My Awesome Site&lt;/title&gt;
+  [DROPZONE2]
+  [DROPZONE3]
+    &lt;h1&gt;Welcome to My Site!&lt;/h1&gt;
+    &lt;p&gt;This is a sample paragraph to demonstrate &lt;b&gt;HTML&lt;/b&gt; structure.&lt;/p&gt;
+  [DROPZONE4]
+    &lt;ul&gt;
+      &lt;li&gt;Item One&lt;/li&gt;
+      &lt;li&gt;Item Two&lt;/li&gt;
+      &lt;li&gt;Item Three&lt;/li&gt;
+    &lt;/ul&gt;
+    &lt;table border=&quot;1&quot;&gt;
+      &lt;tr&gt;
+        &lt;th&gt;Name&lt;/th&gt;
+        &lt;th&gt;Age&lt;/th&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Alice&lt;/td&gt;
+        &lt;td&gt;30&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/table&gt;
+  [DROPZONE5]
+&lt;/html&gt;
+      </pre>
+    </div>
+    <!-- Right: Draggable Tags -->
+    <div class="draggables-container">
+      <h2>Available Tags</h2>
+      <!-- Required tags and extra distractor tags -->
+      <div class="draggable" draggable="true" id="tag-head">&lt;head&gt;</div>
+      <div class="draggable" draggable="true" id="tag-/head">&lt;/head&gt;</div>
+      <div class="draggable" draggable="true" id="tag-body">&lt;body&gt;</div>
+      <div class="draggable" draggable="true" id="tag-hr">&lt;hr&gt;</div>
+      <div class="draggable" draggable="true" id="tag-/body">&lt;/body&gt;</div>
+      <div class="draggable" draggable="true" id="tag-title">&lt;title&gt;</div>
+      <div class="draggable" draggable="true" id="tag-h1">&lt;h1&gt;</div>
+      <div class="draggable" draggable="true" id="tag-/h1">&lt;/h1&gt;</div>
+      <div class="draggable" draggable="true" id="tag-b">&lt;b&gt;</div>
+      <div class="draggable" draggable="true" id="tag-/b">&lt;/b&gt;</div>
+      <div class="draggable" draggable="true" id="tag-ul">&lt;ul&gt;</div>
+      <div class="draggable" draggable="true" id="tag-/ul">&lt;/ul&gt;</div>
+      <div class="draggable" draggable="true" id="tag-ol">&lt;ol&gt;</div>
+      <div class="draggable" draggable="true" id="tag-/ol">&lt;/ol&gt;</div>
+      <div class="draggable" draggable="true" id="tag-table">&lt;table&gt;</div>
+      <div class="draggable" draggable="true" id="tag-/table">&lt;/table&gt;</div>
+    </div>
+  </div>
+  
+  <button class="submit-btn" onclick="checkPuzzle()">Submit</button>
+  <div class="result" id="result"></div>
+  
+  <script>
+    // Setup drop zones: replace placeholders in the code snippet with interactive drop zones
+    function setupDropZones() {
+      const preEl = document.getElementById('code-snippet');
+      let html = preEl.innerHTML;
+      html = html.replace('[DROPZONE1]', '<span class="dropzone" data-expected="&lt;head&gt;" id="dz1">[Drop &lt;head&gt; tag here]</span>');
+      html = html.replace('[DROPZONE2]', '<span class="dropzone" data-expected="&lt;/head&gt;" id="dz2">[Drop &lt;/head&gt; tag here]</span>');
+      html = html.replace('[DROPZONE3]', '<span class="dropzone" data-expected="&lt;body&gt;" id="dz3">[Drop &lt;body&gt; tag here]</span>');
+      html = html.replace('[DROPZONE4]', '<span class="dropzone" data-expected="&lt;hr&gt;" id="dz4">[Drop &lt;hr&gt; tag here]</span>');
+      html = html.replace('[DROPZONE5]', '<span class="dropzone" data-expected="&lt;/body&gt;" id="dz5">[Drop &lt;/body&gt; tag here]</span>');
+      preEl.innerHTML = html;
+    }
+    setupDropZones();
+    
+    // Setup drag functionality for draggable items
+    document.querySelectorAll('.draggable').forEach(item => {
+      item.addEventListener('dragstart', event => {
+        event.dataTransfer.setData('text/plain', event.target.id);
+      });
+    });
+    
+    // Setup drop functionality for each drop zone
+    document.querySelectorAll('.dropzone').forEach(zone => {
+      zone.addEventListener('dragover', event => {
+        event.preventDefault();
+      });
+      zone.addEventListener('drop', event => {
+        event.preventDefault();
+        let draggedId = event.dataTransfer.getData('text/plain');
+        let draggedElement = document.getElementById(draggedId);
+        // Insert the dragged element's text into the drop zone
+        zone.innerText = draggedElement.innerText.trim();
+      });
+    });
+    
+    function checkPuzzle() {
+      const zones = document.querySelectorAll('.dropzone');
+      let allCorrect = true;
+      zones.forEach(zone => {
+        if (zone.innerText.trim() === zone.getAttribute('data-expected').trim()) {
+          zone.classList.add('correct');
+        } else {
+          allCorrect = false;
+        }
+      });
+      if (allCorrect) {
+        document.getElementById('result').innerText = "Congratulations! The secret code is: 45*54";
+      } else {
+        document.getElementById('result').innerText = "Some tags are not correctly placed. Please try again.";
+      }
+    }
+  </script>
+</body>
+</html>
+

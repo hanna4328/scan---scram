@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hex Code Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #222;
+      color: white;
+      padding: 20px;
+      transition: background-color 2s ease; /* Slower background transition */
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+    .quiz-container {
+      background: #333;
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .color-box {
+      width: 100px;
+      height: 100px;
+      margin: 20px auto;
+      border: 2px solid white;
+    }
+    .option {
+      display: block;
+      background: #444;
+      color: white;
+      padding: 10px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .option:hover {
+      background: #555;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #timer {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Intro Page -->
+  <div id="intro" class="container">
+    <h1><font color="lightblue">Learn & Play: Hex Code Quiz</font></h1>
+    <p>
+      A hex code is a six-digit code used in web design to represent colors. It follows the format 
+      <b># RRGGBB</b>, where:
+      <br><br>
+      <b>RR</b> represents the<font color="red"> red</font> component, 
+      <b>GG</b> represents the <font color="green">green</font> component, and 
+      <b>BB</b> represents the <font color="blue">blue </font>component.
+      <br><br>
+      Each pair is a hexadecimal number (using digits 0-9 and letters A-F) that defines the intensity of that color from 0 (no intensity) to 255 (full intensity). 
+      Hex stands for <b>hexadecimal</b> — a base-16 numbering system.
+      <br><br>
+      Hex codes are used in web design, digital graphics, and many software applications to ensure consistent color representation across different devices.
+    </p>
+    <button onclick="startQuiz()">Start Quiz</button>
+  </div>
+
+  <!-- Quiz Page -->
+  <div id="quiz" class="quiz-container" style="display: none;">
+    <h2>What is the hex code for this color?</h2>
+    <div class="color-box" id="colorBox"></div>
+    <div id="options"></div>
+    <p id="result"></p>
+    <div id="timer"></div>
+  </div>
+
+  <script>
+    // Quiz data with additional levels using red, green, and blue combinations
+    const quizData = [
+      { color: "#000000", options: ["#FFFFFF", "#000000", "#FF0000"], answer: "#000000" },
+      { color: "#FFFFFF", options: ["#000000", "#FFFFFF", "#00FF00"], answer: "#FFFFFF" },
+      { color: "#FF0000", options: ["#FF0000", "#00FF00", "#0000FF"], answer: "#FF0000" },
+      { color: "#00FF00", options: ["#FF00FF", "#00FF00", "#FFFF00"], answer: "#00FF00" },
+      { color: "#0000FF", options: ["#0000FF", "#FFA500", "#808080"], answer: "#0000FF" },
+      { color: "#FFFF00", options: ["#00FFFF", "#FFFF00", "#FF00FF"], answer: "#FFFF00" },
+      { color: "#00FFFF", options: ["#00FFFF", "#FF00FF", "#00FF00"], answer: "#00FFFF" },
+      { color: "#FF00FF", options: ["#FF00FF", "#000000", "#FFFFFF"], answer: "#FF00FF" },
+      { color: "#FFA500", options: ["#A52A2A", "#800080", "#FFA500"], answer: "#FFA500" },
+      { color: "#800080", options: ["#008000", "#800080", "#FFD700"], answer: "#800080" }
+    ];
+    
+    let currentQuestion = 0;
+    let timerInterval;
+    let timeLeft = 15; // seconds
+    const colorBox = document.getElementById("colorBox");
+    const optionsDiv = document.getElementById("options");
+    const resultText = document.getElementById("result");
+    const timerDisplay = document.getElementById("timer");
+
+    // Start the quiz by hiding intro and showing quiz, and start timer
+    function startQuiz() {
+      document.getElementById("intro").style.display = "none";
+      document.getElementById("quiz").style.display = "block";
+      currentQuestion = 0;
+      timeLeft = 15;
+      startTimer();
+      loadQuestion();
+    }
+
+    // Display the countdown timer
+    function startTimer() {
+      timerDisplay.textContent = `Time Remaining: ${timeLeft}s`;
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time Remaining: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          restartQuiz("Time's up! Restarting quiz...");
+        }
+      }, 1000);
+    }
+
+    // Load current question
+    function loadQuestion() {
+      const question = quizData[currentQuestion];
+      // Set both the color box and the background color with smooth transition
+      colorBox.style.backgroundColor = question.color;
+      document.body.style.backgroundColor = question.color;
+      
+      optionsDiv.innerHTML = "";
+      question.options.forEach(option => {
+        const btn = document.createElement("div");
+        btn.classList.add("option");
+        btn.textContent = option;
+        btn.onclick = () => checkAnswer(option);
+        optionsDiv.appendChild(btn);
+      });
+    }
+
+    // Check the user's answer
+    function checkAnswer(selected) {
+      // Stop the timer while processing answer
+      clearInterval(timerInterval);
+      if (selected === quizData[currentQuestion].answer) {
+        resultText.textContent = "Correct!";
+        currentQuestion++;
+        if (currentQuestion < quizData.length) {
+          setTimeout(() => {
+            resultText.textContent = "";
+            timeLeft = 15; // Reset timer for next question
+            startTimer();
+            loadQuestion();
+          }, 1000);
+        } else {
+          resultText.textContent = "Congratulations! The secret code is 09987676";
+          timerDisplay.textContent = "";
+        }
+      } else {
+        // On wrong answer, restart the quiz from intro page
+        restartQuiz("Wrong answer! Restarting quiz...");
+      }
+    }
+
+    // Restart the quiz and return to the intro page
+    function restartQuiz(message) {
+      clearInterval(timerInterval);
+      alert(message);
+      location.reload();
+    }
+  </script>
+</body>
+</html>
+
