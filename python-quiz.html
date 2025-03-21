@@ -87,25 +87,27 @@
       {
         question: "Correct the variable assignment:",
         faultyCode: "3var = 10",
+        // Re-ordered so the correct answer ("var3 = 10") is now at index 2
         options: [
-          "var3 = 10",               // Correct answer (index 0)
           "var = 3 10",
           "int var = 10",
+          "var3 = 10",
           "3var = 10"
         ],
-        correct: 0,
+        correct: 2,
         explanation: "Variable names cannot start with a number in Python."
       },
       {
         question: "Fix the loop syntax:",
         faultyCode: "for i in range(5) print(i)",
+        // Re-ordered so the correct answer ("for i in range(5): print(i)") is now at index 1
         options: [
-          "for i in range(5): print(i)",  // Correct answer (index 0)
           "for i in range(5) {print(i)}",
+          "for i in range(5): print(i)",
           "for(i=0; i<5; i++) print(i)",
           "for i in range(5) print(i)"
         ],
-        correct: 0,
+        correct: 1,
         explanation: "A colon is required at the end of the 'for' statement in Python."
       },
       {
@@ -147,20 +149,21 @@
       {
         question: "Fix the syntax error in the following while loop:",
         faultyCode: "while x < 10\nx += 1",
+        // Re-ordered so the correct answer ("while x < 10:\n    x += 1") is now at index 1
         options: [
-          "while x < 10:\n    x += 1",  // Correct answer (index 0)
           "while x < 10: x += 1",
+          "while x < 10:\n    x += 1",
           "while(x < 10) { x += 1 }",
-          "while x < 10\n    x += 1"   // This option is the same as faulty code\n        \n"
+          "while x < 10\n    x += 1"
         ],
-        correct: 0,
+        correct: 1,
         explanation: "While loops in Python require a colon after the condition and proper indentation for the loop body."
       }
     ];
     
     function startTimer() {
       clearInterval(timerInterval);
-      timeLeft = 30;
+      timeLeft = 60;
       document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
       timerInterval = setInterval(() => {
         timeLeft--;
