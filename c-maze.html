@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escape the Maze & C Quiz Challenge</title>
+  <!-- Decorative ancient-style font -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Cinzel', serif;
+      text-align: center;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+      color: #3e3e3e;
+    }
+    h1, h2 {
+      margin: 10px 0;
+    }
+    .container {
+      position: relative;
+      max-width: 650px;
+      margin: 20px auto;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background: #ff4081;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 20px;
+    }
+    button:hover {
+      background: #e73370;
+    }
+    /* Maze Grid Styling */
+    #mazeWrapper {
+      position: relative;
+      width: calc(5 * 60px + 4 * 5px); /* 5 cells of 60px and 4 gaps of 5px */
+      margin: 20px auto;
+    }
+    #mazeGrid {
+      display: grid;
+      gap: 5px;
+      grid-template-columns: repeat(5, 60px);
+      grid-template-rows: repeat(5, 60px);
+    }
+    .maze-cell {
+      width: 60px;
+      height: 60px;
+      background: #d1bfa7;
+      border: 2px solid #8b6f47;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: background 0.3s;
+      cursor: pointer;
+    }
+    .maze-cell.visited {
+      background: #8bc34a;
+      color: #fff;
+    }
+    .maze-cell.player {
+      background: #ffeb3b;
+      font-weight: bold;
+    }
+    /* Canvas overlay for drawing lines */
+    #mazeCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .timer {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+    /* Tip displayed on top of the maze grid */
+    #mazeMessage {
+      margin-bottom: 10px;
+      font-style: italic;
+      color: #795548;
+    }
+    /* Quiz Styling */
+    .quiz-question {
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .quiz-option {
+      padding: 10px;
+      background: #ff7043;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .quiz-option:hover {
+      background: #f4511e;
+    }
+    /* Avatar styling for final animation */
+    #avatar {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      z-index: 20;
+      transition: transform 0.5s ease;
+      font-size: 24px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Front Page -->
+  <div id="frontPage" class="container">
+    <h1>Welcome to the Maze Escape Challenge!</h1>
+    <p>
+      First, you will see a demonstration of the correct path through an ancient maze.
+      Memorize the straight line connecting the correct cells.
+    </p>
+    <p>
+      Then, click the cells in order. As you do, a red line will appear connecting them.
+      Once the entire path is correctly traced, your avatar will animate along the path and you'll face a timed C programming quiz.
+      If you make a mistake or run out of time, you'll restart the maze.
+    </p>
+    <button onclick="startGame()">Start Challenge</button>
+  </div>
+  
+  <!-- Maze Phase Container -->
+  <div id="mazeContainer" class="container hidden">
+    <h1>Maze Phase</h1>
+    <!-- C Tip Displayed on Top -->
+    <div id="mazeMessage">Memorize the path!</div>
+    <div id="mazeWrapper">
+      <div id="mazeGrid"></div>
+      <canvas id="mazeCanvas" width="320" height="320"></canvas>
+      <div id="avatar" class="hidden">🙂</div>
+    </div>
+    <div class="timer">Time Left for this move: <span id="mazeTimer">20</span> sec</div>
+  </div>
+  
+  <!-- Quiz Phase Container -->
+  <div id="quizContainer" class="container hidden">
+    <h1>C Programming Quiz</h1>
+    <div class="quiz-question" id="quizQuestion"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="timer">Time Left: <span id="quizTimer">30</span> sec</div>
+    <div id="quizMessage"></div>
+  </div>
+  
+  <script>
+    /******** Global Variables ********/
+    // Maze settings
+    const mazeSize = 5; // Fixed 5x5 grid
+    const cellSize = 60; // each cell is 60x60
+    const gap = 5;       // grid gap is 5px
+    const effectiveSize = cellSize + gap; // effective spacing
+    // Predefined correct path (array of [row, col] coordinates)
+    const correctPath = [
+      [0,0], [0,1], [1,1], [2,1], [2,2], [2,3], [3,3], [4,3], [4,4]
+    ];
+    // Moderate-complexity C programming tips for each move
+    const cTips = [
+      "The 'volatile' keyword stops the compiler from caching a variable's value.",
+      "'malloc()' returns a pointer to uninitialized memory; check for NULL.",
+      "A function pointer for a function returning int with two int parameters is declared as: int (*fp)(int, int);",
+      "Using 'const' makes a variable read-only after it is initialized.",
+      "Structures (struct) group related data; proper alignment can enhance performance.",
+      "Declaring a variable as 'static' inside a function retains its value between calls.",
+      "Bitwise operators allow manipulation of individual bits in data.",
+      "Checking the result of dynamic memory allocation prevents null pointer crashes."
+    ];
+    let currentStep = 0;  // index into correctPath; first cell is given
+    let moveTimerInterval;
+    let moveTimeLimit = 20; // seconds per move
+    let currentMoveTime = moveTimeLimit;
+    
+    // Quiz settings - moderate complexity questions (answers are not verbatim but conceptually derived)
+    const quizQuestions = [
+      {
+        question: "In C, why would you declare a variable as volatile?",
+        options: [
+          "It ensures the variable's value is always read directly from memory.",
+          "It makes the variable constant.",
+          "It stores the variable in a fast cache."
+        ],
+        answer: "It ensures the variable's value is always read directly from memory."
+      },
+      {
+        question: "After calling malloc(), what must you do?",
+        options: [
+          "Check that the returned pointer is not NULL.",
+          "Assume memory is zero-initialized.",
+          "Immediately free the allocated memory."
+        ],
+        answer: "Check that the returned pointer is not NULL."
+      },
+      {
+        question: "Which declaration correctly defines a function pointer for a function returning int with two int parameters?",
+        options: [
+          "int (*fp)(int, int);",
+          "int *fp(int, int);",
+          "int fp*(int, int);"
+        ],
+        answer: "int (*fp)(int, int);"
+      },
+      {
+        question: "What is the effect of the 'const' qualifier on a variable?",
+        options: [
+          "It makes the variable read-only after initialization.",
+          "It allows the variable to be modified freely.",
+          "It causes the variable to be stored in cache."
+        ],
+        answer: "It makes the variable read-only after initialization."
+      },
+      {
+        question: "How does using a struct benefit a C program?",
+        options: [
+          "It groups related data and can improve performance with proper alignment.",
+          "It automatically sorts the data.",
+          "It eliminates the need for dynamic memory allocation."
+        ],
+        answer: "It groups related data and can improve performance with proper alignment."
+      },
+      {
+        question: "What does declaring a local variable as static do?",
+        options: [
+          "It retains the variable's value between function calls.",
+          "It resets the variable on every call.",
+          "It makes the variable accessible globally."
+        ],
+        answer: "It retains the variable's value between function calls."
+      },
+      {
+        question: "Why are bitwise operators used in C?",
+        options: [
+          "They allow you to manipulate individual bits efficiently.",
+          "They perform arithmetic on floating-point numbers.",
+          "They automatically optimize high-level operations."
+        ],
+        answer: "They allow you to manipulate individual bits efficiently."
+      },
+      {
+        question: "Why should dynamic memory allocation results always be verified?",
+        options: [
+          "To avoid crashes from dereferencing a NULL pointer.",
+          "To ensure the memory is automatically zeroed.",
+          "To free the memory immediately."
+        ],
+        answer: "To avoid crashes from dereferencing a NULL pointer."
+      }
+    ];
+    let currentQuizIndex = 0;
+    let quizTimerInterval;
+    let quizTimeLimit = 30; // seconds per quiz question
+    let currentQuizTime = quizTimeLimit;
+    
+    /******** Maze Phase Variables ********/
+    const mazeCanvas = document.getElementById("mazeCanvas");
+    const ctx = mazeCanvas.getContext("2d");
+    
+    /******** Game Flow ********/
+    function startGame() {
+      // Hide front page, show maze phase
+      document.getElementById("frontPage").classList.add("hidden");
+      document.getElementById("mazeContainer").classList.remove("hidden");
+      resetMazePhase();
+    }
+    
+    /******** Maze Phase Functions ********/
+    function resetMazePhase() {
+      currentStep = 0;
+      clearInterval(moveTimerInterval);
+      // Clear canvas and hide avatar
+      ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+      document.getElementById("avatar").classList.add("hidden");
+      // Reset tip message
+      document.getElementById("mazeMessage").textContent = "Memorize the path!";
+      // Create grid and demonstrate the path
+      createMazeGrid();
+      demonstratePath();
+    }
+    
+    // Create the maze grid
+    function createMazeGrid() {
+      const mazeGrid = document.getElementById("mazeGrid");
+      mazeGrid.innerHTML = "";
+      for (let row = 0; row < mazeSize; row++) {
+        for (let col = 0; col < mazeSize; col++) {
+          const cell = document.createElement("div");
+          cell.className = "maze-cell";
+          cell.dataset.row = row;
+          cell.dataset.col = col;
+          cell.onclick = () => handleCellClick(row, col);
+          mazeGrid.appendChild(cell);
+        }
+      }
+      updateMazeDisplay();
+    }
+    
+    // Demonstrate the correct path by drawing a straight line through the centers of correct cells
+    function demonstratePath() {
+      const mazeMessage = document.getElementById("mazeMessage");
+      mazeMessage.textContent = "Memorize the path!";
+      ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      correctPath.forEach((pos, index) => {
+        const x = pos[1] * effectiveSize + cellSize / 2;
+        const y = pos[0] * effectiveSize + cellSize / 2;
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+      setTimeout(() => {
+        ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+        mazeMessage.textContent = "Your turn! Click the cells in order.";
+        startMoveTimer();
+      }, 3000);
+    }
+    
+    // Start timer for each move; if time expires, reset maze phase
+    function startMoveTimer() {
+      currentMoveTime = moveTimeLimit;
+      document.getElementById("mazeTimer").textContent = currentMoveTime;
+      clearInterval(moveTimerInterval);
+      moveTimerInterval = setInterval(() => {
+        currentMoveTime--;
+        document.getElementById("mazeTimer").textContent = currentMoveTime;
+        if (currentMoveTime <= 0) {
+          alert("Time's up for this move! Restarting maze...");
+          clearInterval(moveTimerInterval);
+          resetMazePhase();
+        }
+      }, 1000);
+    }
+    
+    // Handle player's cell click
+    function handleCellClick(row, col) {
+      clearInterval(moveTimerInterval);
+      const expected = correctPath[currentStep + 1];
+      if (expected && row === expected[0] && col === expected[1]) {
+        currentStep++;
+        updateMazeDisplay();
+        drawPlayerLine();
+        // Display the tip for the move that was just completed
+        if (currentStep - 1 < cTips.length) {
+          document.getElementById("mazeMessage").textContent = cTips[currentStep - 1];
+        }
+        startMoveTimer();
+        if (currentStep === correctPath.length - 1) {
+          clearInterval(moveTimerInterval);
+          animateAvatar();
+        }
+      } else {
+        alert("Wrong cell! Restarting maze...");
+        resetMazePhase();
+      }
+    }
+    
+    // Draw the player's traced line on the canvas (red line)
+    function drawPlayerLine() {
+      ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+      ctx.strokeStyle = "#ff0000";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i <= currentStep; i++) {
+        const pos = correctPath[i];
+        const x = pos[1] * effectiveSize + cellSize / 2;
+        const y = pos[0] * effectiveSize + cellSize / 2;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+    }
+    
+    // Update maze grid display to mark visited cells and the player's current position
+    function updateMazeDisplay() {
+      const cells = document.querySelectorAll(".maze-cell");
+      cells.forEach(cell => {
+        const row = Number(cell.dataset.row);
+        const col = Number(cell.dataset.col);
+        cell.classList.remove("player");
+        cell.classList.remove("visited");
+        for (let i = 0; i <= currentStep; i++) {
+          if (correctPath[i][0] == row && correctPath[i][1] == col) {
+            cell.classList.add("visited");
+          }
+        }
+        cell.textContent = "";
+      });
+      const lastStep = correctPath[currentStep];
+      const playerCell = document.querySelector(`.maze-cell[data-row='${lastStep[0]}'][data-col='${lastStep[1]}']`);
+      if (playerCell) {
+        playerCell.classList.add("player");
+        playerCell.textContent = "🙂";
+      }
+    }
+    
+    // Animate the avatar along the traced path, starting from the initial cell
+    function animateAvatar() {
+      const avatar = document.getElementById("avatar");
+      avatar.classList.remove("hidden");
+      // Position avatar at starting cell
+      const startPos = correctPath[0];
+      const startX = startPos[1] * effectiveSize + cellSize / 2 - avatar.offsetWidth / 2;
+      const startY = startPos[0] * effectiveSize + cellSize / 2 - avatar.offsetHeight / 2;
+      avatar.style.transform = `translate(${startX}px, ${startY}px)`;
+      
+      let index = 1; // start animation from the second cell
+      function moveAvatar() {
+        if (index >= correctPath.length) {
+          setTimeout(startQuiz, 500);
+          return;
+        }
+        const pos = correctPath[index];
+        const x = pos[1] * effectiveSize + cellSize / 2 - avatar.offsetWidth / 2;
+        const y = pos[0] * effectiveSize + cellSize / 2 - avatar.offsetHeight / 2;
+        avatar.style.transform = `translate(${x}px, ${y}px)`;
+        index++;
+        setTimeout(moveAvatar, 500);
+      }
+      moveAvatar();
+    }
+    
+    /******** Quiz Phase Functions ********/
+    function startQuiz() {
+      document.getElementById("mazeContainer").classList.add("hidden");
+      document.getElementById("quizContainer").classList.remove("hidden");
+      currentQuizIndex = 0;
+      loadQuizQuestion();
+    }
+    
+    function loadQuizQuestion() {
+      const quiz = quizQuestions[currentQuizIndex];
+      document.getElementById("quizQuestion").textContent = quiz.question;
+      const optionsDiv = document.getElementById("quizOptions");
+      optionsDiv.innerHTML = "";
+      // Randomize options order
+      const shuffledOptions = quiz.options.slice().sort(() => Math.random() - 0.5);
+      shuffledOptions.forEach(option => {
+        const btn = document.createElement("button");
+        btn.className = "quiz-option";
+        btn.textContent = option;
+        btn.onclick = () => checkQuizAnswer(option);
+        optionsDiv.appendChild(btn);
+      });
+      currentQuizTime = quizTimeLimit;
+      document.getElementById("quizTimer").textContent = currentQuizTime;
+      clearInterval(quizTimerInterval);
+      quizTimerInterval = setInterval(() => {
+        currentQuizTime--;
+        document.getElementById("quizTimer").textContent = currentQuizTime;
+        if (currentQuizTime <= 0) {
+          alert("Time's up for this question! Restarting quiz...");
+          clearInterval(quizTimerInterval);
+          resetGame();
+        }
+      }, 1000);
+    }
+    
+    function checkQuizAnswer(selected) {
+      clearInterval(quizTimerInterval);
+      if (selected === quizQuestions[currentQuizIndex].answer) {
+        currentQuizIndex++;
+        if (currentQuizIndex >= quizQuestions.length) {
+          document.getElementById("quizContainer").innerHTML = "<h2>Congratulations! The code is C7898C</h2>";
+        } else {
+          setTimeout(loadQuizQuestion, 1000);
+        }
+      } else {
+        alert("Wrong answer! Restarting challenge...");
+        resetGame();
+      }
+    }
+    
+    function resetGame() {
+      clearInterval(moveTimerInterval);
+      clearInterval(quizTimerInterval);
+      document.getElementById("quizContainer").classList.add("hidden");
+      document.getElementById("mazeContainer").classList.remove("hidden");
+      resetMazePhase();
+    }
+    
+    // Initialize maze grid on page load
+    createMazeGrid();
+  </script>
+</body>
+</html>

@@ -23,14 +23,15 @@
     }
     .hidden-btn {
       position: absolute;
-      bottom: 20%; /* Changed from top to bottom */
-      left: 20%;   /* Adjusted left position for bottom left-middle placement */
+      bottom: 20%; /* Positioned at bottom left-middle */
+      left: 20%;
       background-color: white;
       color: black;
       padding: 10px 20px;
       border: none;
       cursor: pointer;
       display: none;
+      transition: border 0.3s ease;
     }
     /* Game Section Styles */
     #game {
@@ -126,17 +127,17 @@
         let distance = Math.hypot(x - (rect.left + rect.width / 2), y - (rect.top + rect.height / 2));
         if (distance < 50) {
           btn.style.display = "block";
+          // Give a slight visual indication: flash a yellow border.
+          btn.style.border = "3px solid yellow";
+          setTimeout(() => {
+            btn.style.border = "none";
+          }, 500);
         }
       }
       document.body.addEventListener("mousemove", revealButton);
       document.body.addEventListener("touchstart", revealButton);
-      // Added touchmove event for mobile compatibility.
       document.body.addEventListener("touchmove", revealButton);
-      // Added touchend event that logs a hint to the console (for developer use only)
-      document.body.addEventListener("touchend", function(event) {
-        revealButton(event);
-        console.log("Hint (developer only): The hidden button is positioned at the bottom left-middle (approximately 20% from the bottom and 20% from the left).");
-      });
+      document.body.addEventListener("touchend", revealButton);
       
       function showGame() {
         document.getElementById("intro").style.display = "none";
@@ -159,7 +160,7 @@
   </div>
 
   <script>
-    // Level Data
+    // Level Data (unchanged)
     const levels = [
       // Level 1: 6 pairs.
       {
@@ -220,47 +221,34 @@
     let selectedElementBox = null;
     let selectedDescBox = null;
 
-    // Reset the level when a wrong match is made or time expires.
     function resetLevel() {
       alert("Wrong match or time expired! Restarting level.");
       clearInterval(timerInterval);
       initLevel(currentLevelIndex);
     }
 
-    // Initialize level
     function initLevel(levelIndex) {
       currentLevel = levels[levelIndex];
       timeLeft = currentLevel.timeLimit;
       document.getElementById("levelNumber").innerText = levelIndex + 1;
       document.getElementById("timeLeft").innerText = timeLeft;
       document.getElementById("message").innerText = "";
-
-      // Clear previous columns
       document.getElementById("elementColumn").innerHTML = "";
       document.getElementById("descColumn").innerHTML = "";
-
-      // Prepare arrays of elements and descriptions (shuffled independently)
       let elements = currentLevel.pairs.map(pair => ({ id: pair.id, value: pair.element }));
       let descriptions = currentLevel.pairs.map(pair => ({ id: pair.id, value: pair.description }));
       elements = shuffleArray(elements);
       descriptions = shuffleArray(descriptions);
-
-      // All boxes use the same neutral color initially.
       const boxColor = "#444";
-
-      // Create boxes for elements
       elements.forEach(item => {
         const box = document.createElement("div");
         box.classList.add("box");
         box.style.backgroundColor = boxColor;
         box.innerText = item.value;
-        // Save pair id for matching comparison.
         box.dataset.pairId = item.id;
         box.onclick = () => selectElement(box);
         document.getElementById("elementColumn").appendChild(box);
       });
-
-      // Create boxes for descriptions
       descriptions.forEach(item => {
         const box = document.createElement("div");
         box.classList.add("box");
@@ -270,8 +258,6 @@
         box.onclick = () => selectDescription(box);
         document.getElementById("descColumn").appendChild(box);
       });
-
-      // Start the timer
       timerInterval = setInterval(() => {
         timeLeft--;
         document.getElementById("timeLeft").innerText = timeLeft;
@@ -280,13 +266,10 @@
           resetLevel();
         }
       }, 1000);
-
-      // Reset selections
       selectedElementBox = null;
       selectedDescBox = null;
     }
 
-    // Utility: Shuffle an array
     function shuffleArray(array) {
       let newArr = array.slice();
       for (let i = newArr.length - 1; i > 0; i--) {
@@ -296,7 +279,6 @@
       return newArr;
     }
 
-    // When an element box is clicked
     function selectElement(box) {
       if (box.classList.contains("matched")) return;
       if (selectedElementBox === box) {
@@ -314,7 +296,6 @@
       }
     }
 
-    // When a description box is clicked
     function selectDescription(box) {
       if (box.classList.contains("matched")) return;
       if (selectedDescBox === box) {
@@ -332,17 +313,14 @@
       }
     }
 
-    // Check if the selected element and description match by comparing their data-pair-id.
     function checkMatch() {
       if (selectedElementBox.dataset.pairId === selectedDescBox.dataset.pairId) {
-        // Correct match: add correct animation.
         selectedElementBox.classList.add("matched", "correct");
         selectedDescBox.classList.add("matched", "correct");
         selectedElementBox.style.outline = "none";
         selectedDescBox.style.outline = "none";
         selectedElementBox = null;
         selectedDescBox = null;
-        // Check if all boxes are matched.
         if (document.querySelectorAll(".box.matched").length === currentLevel.pairs.length * 2) {
           clearInterval(timerInterval);
           if (currentLevelIndex < levels.length - 1) {
@@ -350,12 +328,10 @@
             currentLevelIndex++;
             initLevel(currentLevelIndex);
           } else {
-            // Final secret code updated to "wohoo34"
             document.body.innerHTML = `<h1>Congratulations!</h1><p>You completed all levels.</p><h2>The code is wohoo34</h2>`;
           }
         }
       } else {
-        // Wrong match: show incorrect animation then reset level.
         selectedElementBox.classList.add("incorrect");
         selectedDescBox.classList.add("incorrect");
         setTimeout(() => {
