@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTML Element Matching Puzzle</title>
+  <style>
+    /* Intro Section Styles */
+    #intro {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    #intro h1, #intro p {
+      margin: 10px;
+    }
+    .hidden-btn {
+      position: absolute;
+      top: 50%;
+      left: 30%;
+      background-color: white;
+      color: black;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      display: none;
+    }
+    /* Game Section Styles */
+    #game {
+      display: none;
+      min-height: 100vh;
+      background: linear-gradient(120deg, #001f3f, #39CCCC);
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #game h1 {
+      margin-top: 20px;
+    }
+    #instruction {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    #timerContainer {
+      margin: 10px 0;
+      font-size: 20px;
+    }
+    #gameContainer {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      max-width: 800px;
+      margin-top: 20px;
+    }
+    .column {
+      width: 45%;
+    }
+    .box {
+      background-color: #444;  /* All boxes start with neutral color */ 
+      margin: 10px;
+      padding: 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: border 0.3s, opacity 0.3s;
+      text-align: center;
+      font-size: 18px;
+      border: 3px solid transparent;
+    }
+    .box:hover {
+      opacity: 0.9;
+    }
+    .box.matched {
+      opacity: 0.6;
+      cursor: default;
+    }
+    /* Animation for correct selection */
+    @keyframes correctFlash {
+      0%   { border-color: white; }
+      50%  { border-color: #39FF14; } /* bright fluorescent green */
+      100% { border-color: white; }
+    }
+    .correct {
+      animation: correctFlash 0.5s ease-in-out;
+    }
+    /* Animation for incorrect selection */
+    @keyframes wrongFlash {
+      0%   { border-color: white; }
+      50%  { border-color: #FF073A; } /* bright fluorescent red */
+      100% { border-color: white; }
+    }
+    .incorrect {
+      animation: wrongFlash 0.5s ease-in-out;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 22px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Intro Section -->
+  <div id="intro">
+    <h1>Welcome!</h1>
+    <p>Find the hidden button to start the puzzle.</p>
+    <button class="hidden-btn" onclick="showGame()">Start</button>
+    <script>
+      // Reveal the hidden button if the pointer (or touch) is near it.
+      function revealButton(event) {
+        let btn = document.querySelector(".hidden-btn");
+        let rect = btn.getBoundingClientRect();
+        let x, y;
+        if (event.touches && event.touches.length > 0) {
+          x = event.touches[0].clientX;
+          y = event.touches[0].clientY;
+        } else {
+          x = event.clientX;
+          y = event.clientY;
+        }
+        let distance = Math.hypot(x - (rect.left + rect.width / 2), y - (rect.top + rect.height / 2));
+        if (distance < 50) {
+          btn.style.display = "block";
+        }
+      }
+      document.body.addEventListener("mousemove", revealButton);
+      document.body.addEventListener("touchstart", revealButton);
+      function showGame() {
+        document.getElementById("intro").style.display = "none";
+        document.getElementById("game").style.display = "block";
+        initLevel(currentLevelIndex);
+      }
+    </script>
+  </div>
+
+  <!-- Game Section -->
+  <div id="game">
+    <h1>HTML Element Matching Puzzle - Level <span id="levelNumber"></span></h1>
+    <div id="instruction">Select one element from the left and its matching description from the right. If you choose incorrectly, your selections will reset!</div>
+    <div id="timerContainer">Time Left: <span id="timeLeft"></span> seconds</div>
+    <div id="gameContainer">
+      <div class="column" id="elementColumn"></div>
+      <div class="column" id="descColumn"></div>
+    </div>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    // Level Data
+    const levels = [
+      // Level 1: 6 pairs.
+      {
+        pairs: [
+          { id: 0, element: '<h1>', description: 'Defines a header' },
+          { id: 1, element: '<p>', description: 'Defines a paragraph' },
+          { id: 2, element: '<img>', description: 'Displays an image' },
+          { id: 3, element: '<a>', description: 'Defines a hyperlink' },
+          { id: 4, element: '<ul>', description: 'Defines an unordered list' },
+          { id: 5, element: '<li>', description: 'Defines a list item' }
+        ],
+        timeLimit: 60
+      },
+      // Level 2: 6 pairs.
+      {
+        pairs: [
+          { id: 0, element: '<table>', description: 'Creates a table' },
+          { id: 1, element: '<tr>', description: 'Defines a table row' },
+          { id: 2, element: '<td>', description: 'Defines a table cell' },
+          { id: 3, element: '<form>', description: 'Defines a form' },
+          { id: 4, element: '<input>', description: 'Creates an input field' },
+          { id: 5, element: '<button>', description: 'Creates a clickable button' }
+        ],
+        timeLimit: 45
+      },
+      // Level 3: 6 pairs (easier level – swapped from previous Level 4)
+      {
+        pairs: [
+          { id: 0, element: '<nav>', description: 'Defines a navigation section' },
+          { id: 1, element: '<blockquote>', description: 'Specifies a quoted section' },
+          { id: 2, element: '<strong>', description: 'Indicates strong importance' },
+          { id: 3, element: '<em>', description: 'Emphasizes text' },
+          { id: 4, element: '<br>', description: 'Inserts a line break' },
+          { id: 5, element: '<hr>', description: ' Inserts a horizontal line' }
+        ],
+        timeLimit: 35
+      },
+      // Level 4: 6 pairs (more challenging – swapped from previous Level 3)
+      {
+        pairs: [
+          { id: 0, element: '<header>', description: 'Represents introductory content' },
+          { id: 1, element: '<footer>', description: 'Specifies a footer for a document' },
+          { id: 2, element: '<section>', description: 'Defines a section in a document' },
+          { id: 3, element: '<article>', description: 'Specifies independent content' },
+          { id: 4, element: '<div>', description: 'Generic container element' },
+          { id: 5, element: '<script>', description: 'Defines client-side script' }
+        ],
+        timeLimit: 30
+      }
+    ];
+
+    let currentLevelIndex = 0;
+    let currentLevel = null;
+    let timerInterval;
+    let timeLeft = 0;
+
+    // Variables to track selections
+    let selectedElementBox = null;
+    let selectedDescBox = null;
+
+    // Reset the level when a wrong match is made or time expires.
+    function resetLevel() {
+      alert("Wrong match or time expired! Restarting level.");
+      clearInterval(timerInterval);
+      initLevel(currentLevelIndex);
+    }
+
+    // Initialize level
+    function initLevel(levelIndex) {
+      currentLevel = levels[levelIndex];
+      timeLeft = currentLevel.timeLimit;
+      document.getElementById("levelNumber").innerText = levelIndex + 1;
+      document.getElementById("timeLeft").innerText = timeLeft;
+      document.getElementById("message").innerText = "";
+
+      // Clear previous columns
+      document.getElementById("elementColumn").innerHTML = "";
+      document.getElementById("descColumn").innerHTML = "";
+
+      // Prepare arrays of elements and descriptions (shuffled independently)
+      let elements = currentLevel.pairs.map(pair => ({ id: pair.id, value: pair.element }));
+      let descriptions = currentLevel.pairs.map(pair => ({ id: pair.id, value: pair.description }));
+      elements = shuffleArray(elements);
+      descriptions = shuffleArray(descriptions);
+
+      // All boxes use the same neutral color initially.
+      const boxColor = "#444";
+
+      // Create boxes for elements
+      elements.forEach(item => {
+        const box = document.createElement("div");
+        box.classList.add("box");
+        box.style.backgroundColor = boxColor;
+        box.innerText = item.value;
+        // Save pair id for matching comparison.
+        box.dataset.pairId = item.id;
+        box.onclick = () => selectElement(box);
+        document.getElementById("elementColumn").appendChild(box);
+      });
+
+      // Create boxes for descriptions
+      descriptions.forEach(item => {
+        const box = document.createElement("div");
+        box.classList.add("box");
+        box.style.backgroundColor = boxColor;
+        box.innerText = item.value;
+        box.dataset.pairId = item.id;
+        box.onclick = () => selectDescription(box);
+        document.getElementById("descColumn").appendChild(box);
+      });
+
+      // Start the timer
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timeLeft").innerText = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          resetLevel();
+        }
+      }, 1000);
+
+      // Reset selections
+      selectedElementBox = null;
+      selectedDescBox = null;
+    }
+
+    // Utility: Shuffle an array
+    function shuffleArray(array) {
+      let newArr = array.slice();
+      for (let i = newArr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+      }
+      return newArr;
+    }
+
+    // When an element box is clicked
+    function selectElement(box) {
+      if (box.classList.contains("matched")) return;
+      if (selectedElementBox === box) {
+        box.style.outline = "none";
+        selectedElementBox = null;
+        return;
+      }
+      if (selectedElementBox) {
+        selectedElementBox.style.outline = "none";
+      }
+      selectedElementBox = box;
+      box.style.outline = "3px solid white";
+      if (selectedDescBox) {
+        checkMatch();
+      }
+    }
+
+    // When a description box is clicked
+    function selectDescription(box) {
+      if (box.classList.contains("matched")) return;
+      if (selectedDescBox === box) {
+        box.style.outline = "none";
+        selectedDescBox = null;
+        return;
+      }
+      if (selectedDescBox) {
+        selectedDescBox.style.outline = "none";
+      }
+      selectedDescBox = box;
+      box.style.outline = "3px solid white";
+      if (selectedElementBox) {
+        checkMatch();
+      }
+    }
+
+    // Check if the selected element and description match by comparing their data-pair-id.
+    function checkMatch() {
+      if (selectedElementBox.dataset.pairId === selectedDescBox.dataset.pairId) {
+        // Correct match: add correct animation.
+        selectedElementBox.classList.add("matched", "correct");
+        selectedDescBox.classList.add("matched", "correct");
+        selectedElementBox.style.outline = "none";
+        selectedDescBox.style.outline = "none";
+        selectedElementBox = null;
+        selectedDescBox = null;
+        // Check if all boxes are matched.
+        if (document.querySelectorAll(".box.matched").length === currentLevel.pairs.length * 2) {
+          clearInterval(timerInterval);
+          if (currentLevelIndex < levels.length - 1) {
+            alert(`Level ${currentLevelIndex + 1} Complete! Proceeding to next level.`);
+            currentLevelIndex++;
+            initLevel(currentLevelIndex);
+          } else {
+            // Final secret code updated to "wohoo34"
+            document.body.innerHTML = `<h1>Congratulations!</h1><p>You completed all levels.</p><h2>The code is wohoo34</h2>`;
+          }
+        }
+      } else {
+        // Wrong match: show incorrect animation then reset level.
+        selectedElementBox.classList.add("incorrect");
+        selectedDescBox.classList.add("incorrect");
+        setTimeout(() => {
+          resetLevel();
+        }, 500);
+      }
+    }
+  </script>
+</body>
+</html>
