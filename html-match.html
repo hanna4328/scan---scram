@@ -130,8 +130,13 @@
       }
       document.body.addEventListener("mousemove", revealButton);
       document.body.addEventListener("touchstart", revealButton);
-      // Added touchmove event for more mobile compatibility
+      // Added touchmove event for mobile compatibility.
       document.body.addEventListener("touchmove", revealButton);
+      // Added touchend event that reveals the button and logs a hint to the console (not shown to the user)
+      document.body.addEventListener("touchend", function(event) {
+        revealButton(event);
+        console.log("Hint (for developer only): The hidden button is near the middle of the screen, about 50% from the top and 30% from the left.");
+      });
       
       function showGame() {
         document.getElementById("intro").style.display = "none";
@@ -361,3 +366,4 @@
   </script>
 </body>
 </html>
+
