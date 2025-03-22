@@ -130,6 +130,9 @@
       }
       document.body.addEventListener("mousemove", revealButton);
       document.body.addEventListener("touchstart", revealButton);
+      // Added touchmove event for more mobile compatibility
+      document.body.addEventListener("touchmove", revealButton);
+      
       function showGame() {
         document.getElementById("intro").style.display = "none";
         document.getElementById("game").style.display = "block";
@@ -185,7 +188,7 @@
           { id: 2, element: '<strong>', description: 'Indicates strong importance' },
           { id: 3, element: '<em>', description: 'Emphasizes text' },
           { id: 4, element: '<br>', description: 'Inserts a line break' },
-          { id: 5, element: '<hr>', description: ' Inserts a horizontal line' }
+          { id: 5, element: '<hr>', description: 'Inserts a horizontal line' }
         ],
         timeLimit: 35
       },
