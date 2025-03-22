@@ -46,7 +46,7 @@
       padding: 2px;
       border-radius: 3px;
     }
-    /* We remove the maxlength attribute so that our JS controls character processing */
+    /* Remove maxlength attribute so that our JS controls character processing */
     #inputBox {
       font-size: 20px;
       text-align: center;
@@ -174,11 +174,12 @@
       inputBox.value = "";
       inputBox.focus();
 
-      // Use the input event to capture keystrokes on mobile devices.
+      // Use the input event to capture keystrokes on mobile.
       inputBox.oninput = function(e) {
-        // e.data contains the newly entered character on most mobile browsers.
-        let newChar = e.data;
-        if (newChar && newChar.length === 1) {
+        let value = inputBox.value;
+        if (value.length > 0) {
+          // Use the first character if multiple characters are present.
+          let newChar = value.charAt(0);
           inputBuffer.push(newChar);
           if (!processingBuffer) {
             processBuffer();
