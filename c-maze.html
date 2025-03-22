@@ -117,16 +117,6 @@
     .quiz-option:hover {
       background: #f4511e;
     }
-    /* Avatar styling for final animation */
-    #avatar {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      z-index: 20;
-      transition: transform 0.5s ease;
-      font-size: 24px;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
@@ -139,7 +129,7 @@
     </p>
     <p>
       Then, click the cells in order. As you do, a red line will appear connecting them.
-      Once the entire path is correctly traced, your avatar will animate along the path and you'll face a timed C programming quiz.
+      Once the entire path is correctly traced, you'll face a timed C programming quiz.
       If you make a mistake or run out of time, you'll restart the maze.
     </p>
     <button onclick="startGame()">Start Challenge</button>
@@ -153,7 +143,6 @@
     <div id="mazeWrapper">
       <div id="mazeGrid"></div>
       <canvas id="mazeCanvas" width="320" height="320"></canvas>
-      <div id="avatar" class="hidden">🙂</div>
     </div>
     <div class="timer">Time Left for this move: <span id="mazeTimer">20</span> sec</div>
   </div>
@@ -180,42 +169,42 @@
     ];
     // Moderate-complexity C programming tips for each move
     const cTips = [
-      "The 'volatile' keyword stops the compiler from caching a variable's value.",
-      "'malloc()' returns a pointer to uninitialized memory; check for NULL.",
-      "A function pointer for a function returning int with two int parameters is declared as: int (*fp)(int, int);",
-      "Using 'const' makes a variable read-only after it is initialized.",
-      "Structures (struct) group related data; proper alignment can enhance performance.",
-      "Declaring a variable as 'static' inside a function retains its value between calls.",
-      "Bitwise operators allow manipulation of individual bits in data.",
-      "Checking the result of dynamic memory allocation prevents null pointer crashes."
+      "The 'volatile' keyword prevents compiler optimizations on variables that may change unexpectedly.",
+      "'malloc()' allocates dynamic memory; always check its return value to avoid dereferencing NULL.",
+      "Function pointers enable callbacks; declare one as: int (*fp)(int, int);",
+      "The 'const' qualifier protects data by marking it unmodifiable after initialization.",
+      "Use 'struct' to define complex data types; proper alignment can boost performance.",
+      "'static' within functions retains variable values between calls without global exposure.",
+      "Bitwise operators (&, |, ^) allow efficient manipulation of individual bits.",
+      "Verifying dynamic memory allocations is crucial to prevent null pointer dereferences."
     ];
     let currentStep = 0;  // index into correctPath; first cell is given
     let moveTimerInterval;
     let moveTimeLimit = 20; // seconds per move
     let currentMoveTime = moveTimeLimit;
     
-    // Quiz settings - moderate complexity questions (answers are not verbatim but conceptually derived)
+    // Quiz settings - moderate complexity questions derived from the tips
     const quizQuestions = [
       {
-        question: "In C, why would you declare a variable as volatile?",
+        question: "In C, what is the main purpose of the 'volatile' keyword?",
         options: [
-          "It ensures the variable's value is always read directly from memory.",
-          "It makes the variable constant.",
-          "It stores the variable in a fast cache."
+          "To ensure the variable's value is always read from memory.",
+          "To make the variable read-only.",
+          "To optimize variable storage in registers."
         ],
-        answer: "It ensures the variable's value is always read directly from memory."
+        answer: "To ensure the variable's value is always read from memory."
       },
       {
-        question: "After calling malloc(), what must you do?",
+        question: "What should you always do after calling malloc()?",
         options: [
           "Check that the returned pointer is not NULL.",
-          "Assume memory is zero-initialized.",
+          "Assume the memory is zeroed out.",
           "Immediately free the allocated memory."
         ],
         answer: "Check that the returned pointer is not NULL."
       },
       {
-        question: "Which declaration correctly defines a function pointer for a function returning int with two int parameters?",
+        question: "Which of the following correctly declares a function pointer for a function returning int and taking two int parameters?",
         options: [
           "int (*fp)(int, int);",
           "int *fp(int, int);",
@@ -224,49 +213,49 @@
         answer: "int (*fp)(int, int);"
       },
       {
-        question: "What is the effect of the 'const' qualifier on a variable?",
+        question: "What does the 'const' qualifier do in C?",
         options: [
-          "It makes the variable read-only after initialization.",
-          "It allows the variable to be modified freely.",
-          "It causes the variable to be stored in cache."
+          "It makes a variable read-only after initialization.",
+          "It allocates memory for the variable.",
+          "It enables the variable to be modified."
         ],
-        answer: "It makes the variable read-only after initialization."
+        answer: "It makes a variable read-only after initialization."
       },
       {
         question: "How does using a struct benefit a C program?",
         options: [
-          "It groups related data and can improve performance with proper alignment.",
-          "It automatically sorts the data.",
-          "It eliminates the need for dynamic memory allocation."
+          "It groups related data and can enhance performance with proper alignment.",
+          "It automatically sorts data for faster access.",
+          "It frees memory when the struct goes out of scope."
         ],
-        answer: "It groups related data and can improve performance with proper alignment."
+        answer: "It groups related data and can enhance performance with proper alignment."
       },
       {
-        question: "What does declaring a local variable as static do?",
+        question: "What is the effect of declaring a local variable as static within a function?",
         options: [
-          "It retains the variable's value between function calls.",
-          "It resets the variable on every call.",
-          "It makes the variable accessible globally."
+          "It retains its value between function calls.",
+          "It resets on every function call.",
+          "It becomes globally accessible."
         ],
-        answer: "It retains the variable's value between function calls."
+        answer: "It retains its value between function calls."
       },
       {
-        question: "Why are bitwise operators used in C?",
+        question: "Why are bitwise operators useful in C?",
         options: [
-          "They allow you to manipulate individual bits efficiently.",
-          "They perform arithmetic on floating-point numbers.",
-          "They automatically optimize high-level operations."
+          "They allow efficient manipulation of individual bits.",
+          "They perform high-level arithmetic operations.",
+          "They automatically manage memory allocation."
         ],
-        answer: "They allow you to manipulate individual bits efficiently."
+        answer: "They allow efficient manipulation of individual bits."
       },
       {
-        question: "Why should dynamic memory allocation results always be verified?",
+        question: "Why is verifying dynamic memory allocation important?",
         options: [
-          "To avoid crashes from dereferencing a NULL pointer.",
-          "To ensure the memory is automatically zeroed.",
-          "To free the memory immediately."
+          "To prevent crashes from dereferencing a NULL pointer.",
+          "To ensure memory is automatically cleared.",
+          "To allocate additional memory if needed."
         ],
-        answer: "To avoid crashes from dereferencing a NULL pointer."
+        answer: "To prevent crashes from dereferencing a NULL pointer."
       }
     ];
     let currentQuizIndex = 0;
@@ -290,9 +279,8 @@
     function resetMazePhase() {
       currentStep = 0;
       clearInterval(moveTimerInterval);
-      // Clear canvas and hide avatar
+      // Clear canvas
       ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
-      document.getElementById("avatar").classList.add("hidden");
       // Reset tip message
       document.getElementById("mazeMessage").textContent = "Memorize the path!";
       // Create grid and demonstrate the path
@@ -373,7 +361,8 @@
         startMoveTimer();
         if (currentStep === correctPath.length - 1) {
           clearInterval(moveTimerInterval);
-          animateAvatar();
+          // Directly start the quiz without avatar animation
+          setTimeout(startQuiz, 500);
         }
       } else {
         alert("Wrong cell! Restarting maze...");
@@ -421,32 +410,6 @@
         playerCell.classList.add("player");
         playerCell.textContent = "🙂";
       }
-    }
-    
-    // Animate the avatar along the traced path, starting from the initial cell
-    function animateAvatar() {
-      const avatar = document.getElementById("avatar");
-      avatar.classList.remove("hidden");
-      // Position avatar at starting cell
-      const startPos = correctPath[0];
-      const startX = startPos[1] * effectiveSize + cellSize / 2 - avatar.offsetWidth / 2;
-      const startY = startPos[0] * effectiveSize + cellSize / 2 - avatar.offsetHeight / 2;
-      avatar.style.transform = `translate(${startX}px, ${startY}px)`;
-      
-      let index = 1; // start animation from the second cell
-      function moveAvatar() {
-        if (index >= correctPath.length) {
-          setTimeout(startQuiz, 500);
-          return;
-        }
-        const pos = correctPath[index];
-        const x = pos[1] * effectiveSize + cellSize / 2 - avatar.offsetWidth / 2;
-        const y = pos[0] * effectiveSize + cellSize / 2 - avatar.offsetHeight / 2;
-        avatar.style.transform = `translate(${x}px, ${y}px)`;
-        index++;
-        setTimeout(moveAvatar, 500);
-      }
-      moveAvatar();
     }
     
     /******** Quiz Phase Functions ********/
