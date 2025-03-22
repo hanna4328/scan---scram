@@ -23,8 +23,8 @@
     }
     .hidden-btn {
       position: absolute;
-      top: 50%;
-      left: 30%;
+      bottom: 20%; /* Changed from top to bottom */
+      left: 20%;   /* Adjusted left position for bottom left-middle placement */
       background-color: white;
       color: black;
       padding: 10px 20px;
@@ -132,10 +132,10 @@
       document.body.addEventListener("touchstart", revealButton);
       // Added touchmove event for mobile compatibility.
       document.body.addEventListener("touchmove", revealButton);
-      // Added touchend event that reveals the button and logs a hint to the console (not shown to the user)
+      // Added touchend event that logs a hint to the console (for developer use only)
       document.body.addEventListener("touchend", function(event) {
         revealButton(event);
-        console.log("Hint (for developer only): The hidden button is near the middle of the screen, about 50% from the top and 30% from the left.");
+        console.log("Hint (developer only): The hidden button is positioned at the bottom left-middle (approximately 20% from the bottom and 20% from the left).");
       });
       
       function showGame() {
