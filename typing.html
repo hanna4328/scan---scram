@@ -46,6 +46,7 @@
       padding: 2px;
       border-radius: 3px;
     }
+    /* We remove the maxlength attribute so that our JS controls character processing */
     #inputBox {
       font-size: 20px;
       text-align: center;
@@ -93,7 +94,7 @@
       <h1>Typing Competition</h1>
       <div id="requirements"></div>
       <div id="textDisplay"></div>
-      <input type="text" id="inputBox" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <input type="text" id="inputBox" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
       <div id="stats">
         <p id="score">Accuracy: 100%</p>
         <p id="timer">Time Left: 0s</p>
@@ -137,8 +138,8 @@
     let countdownInterval;
     let level = 0;
     
-    let inputBuffer = [];    // Buffer for rapid keystrokes
-    let processingBuffer = false; // Flag to indicate if buffer processing is active
+    let inputBuffer = [];           // Buffer for rapid keystrokes
+    let processingBuffer = false;   // Flag to track if buffer is currently being processed
 
     // Start the competition from level 1
     function startCompetition() {
@@ -173,21 +174,21 @@
       inputBox.value = "";
       inputBox.focus();
 
-      // Set up keydown listener to capture keystrokes into the buffer
-      inputBox.onkeydown = function(e) {
-        // Only process if it's a single-character key (ignore control keys)
-        if (e.key.length === 1) {
-          inputBuffer.push(e.key);
-          // If not already processing, start processing the buffer immediately.
+      // Use the input event to capture keystrokes on mobile devices.
+      inputBox.oninput = function(e) {
+        // e.data contains the newly entered character on most mobile browsers.
+        let newChar = e.data;
+        if (newChar && newChar.length === 1) {
+          inputBuffer.push(newChar);
           if (!processingBuffer) {
             processBuffer();
           }
         }
-        // Prevent default behavior so that our input box only shows what we set.
-        e.preventDefault();
+        // Clear the input box immediately.
+        inputBox.value = "";
       };
 
-      // Countdown timer for time left
+      // Countdown timer for time left.
       countdownInterval = setInterval(() => {
         timeLeft--;
         updateStats();
@@ -199,7 +200,7 @@
       }, 1000);
     }
 
-    // Process one character from the input buffer and provide immediate feedback.
+    // Process one character from the input buffer with immediate feedback.
     function processBuffer() {
       if (inputBuffer.length === 0) {
         processingBuffer = false;
@@ -208,9 +209,8 @@
       processingBuffer = true;
       const inputChar = inputBuffer.shift();
       totalAttempts++;
-      
       const inputBox = document.getElementById("inputBox");
-      // Show the typed character immediately.
+      // Show the typed character briefly.
       inputBox.value = inputChar;
       
       if (inputChar === currentSentence[currentIndex]) {
@@ -231,7 +231,7 @@
         currentIndex++;
         updateDisplay();
         
-        // Check if the sentence is complete.
+        // Check if sentence is complete.
         if (currentIndex === currentSentence.length) {
           clearInterval(countdownInterval);
           let accuracy = Math.floor((correctCount / totalAttempts) * 100);
@@ -252,7 +252,7 @@
             }
           }
         } else {
-          // Process the next character in the buffer after a very short delay (50ms).
+          // Process next buffered character after a short delay.
           setTimeout(processBuffer, 50);
         }
       }, 50);
@@ -278,12 +278,15 @@
         `<p>Level ${level + 1}: Minimum Accuracy: ${currentLevel.minAccuracy}%, Maximum Time: ${currentLevel.maxTime}s</p>`;
     }
 
-    // Update the stats (accuracy and time left).
+    // Update stats: accuracy and time left.
     function updateStats() {
       let accuracy = totalAttempts > 0 ? Math.floor((correctCount / totalAttempts) * 100) : 100;
       document.getElementById("score").innerText = `Accuracy: ${accuracy}%`;
       document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
     }
+
+    // Start the game when the page loads.
+    startCompetition();
   </script>
 </body>
 </html>
