@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Typing Competition</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(120deg, #ff6f91, #ff9671, #ffc75f, #f9f871);
+      color: white;
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #container {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 700px;
+    }
+    #intro, #game, #final {
+      display: none;
+    }
+    #intro.active, #game.active, #final.active {
+      display: block;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 18px;
+      line-height: 1.5;
+    }
+    #textDisplay {
+      font-size: 24px;
+      margin: 20px 0;
+      min-height: 40px;
+    }
+    .current {
+      background-color: rgba(0, 255, 255, 0.3);
+      padding: 2px;
+      border-radius: 3px;
+    }
+    #inputBox {
+      font-size: 20px;
+      text-align: center;
+      width: 30px;
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+    }
+    #stats {
+      margin-top: 15px;
+      font-size: 18px;
+    }
+    button {
+      background: #00c9a7;
+      color: white;
+      padding: 10px 15px;
+      margin-top: 15px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #007f5f;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <!-- Introduction Page -->
+    <div id="intro" class="active">
+      <h1>Welcome to the Typing Competition!</h1>
+      <p>
+        Test your typing skills through three levels of increasing difficulty.
+        You will type one character at a time and the next character to type is highlighted.
+        Each level displays its minimum accuracy and maximum allowed time.
+      </p>
+      <p>Good luck!</p>
+      <button onclick="startCompetition()">Start Competition</button>
+    </div>
+
+    <!-- Game Page -->
+    <div id="game">
+      <h1>Typing Competition</h1>
+      <div id="requirements"></div>
+      <div id="textDisplay"></div>
+      <input type="text" id="inputBox" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <div id="stats">
+        <p id="score">Accuracy: 100%</p>
+        <p id="timer">Time Left: 0s</p>
+      </div>
+    </div>
+
+    <!-- Final Page -->
+    <div id="final">
+      <h1>Competition Over!</h1>
+      <p id="finalStats"></p>
+      <h2>The code is 78goody</h2>
+      <button onclick="restartCompetition()">Restart Competition</button>
+    </div>
+  </div>
+
+  <script>
+    // Level configurations: sentence, minimum accuracy required (%), maximum allowed time (seconds)
+    const levels = [
+      {
+        sentence: "The quick brown fox jumps over the lazy dog! Can you do it?",
+        minAccuracy: 70,
+        maxTime: 30
+      },
+      {
+        sentence: "Practice makes perfect; every keystroke counts in this typing challenge. Stay focused!",
+        minAccuracy: 80,
+        maxTime: 25
+      },
+      {
+        sentence: "Mastering JavaScript: coding, debugging & learning require constant effort & creativity!",
+        minAccuracy: 85,
+        maxTime: 20
+      }
+    ];
+    
+    let currentSentence = "";
+    let currentIndex = 0;
+    let correctCount = 0;
+    let totalAttempts = 0;
+    let timeLeft = 0;
+    let countdownInterval;
+    let level = 0;
+    
+    let inputBuffer = [];    // Buffer for rapid keystrokes
+    let processingBuffer = false; // Flag to indicate if buffer processing is active
+
+    // Start the competition from level 1
+    function startCompetition() {
+      document.getElementById("intro").classList.remove("active");
+      document.getElementById("final").classList.remove("active");
+      document.getElementById("game").classList.add("active");
+      level = 0;
+      startGameLevel();
+    }
+
+    // Restart the entire competition from level 1
+    function restartCompetition() {
+      alert("Restarting competition from Level 1!");
+      startCompetition();
+    }
+
+    // Initialize the game for the current level
+    function startGameLevel() {
+      clearInterval(countdownInterval);
+      inputBuffer = [];
+      processingBuffer = false;
+      const currentLevel = levels[level];
+      currentSentence = currentLevel.sentence;
+      currentIndex = 0;
+      correctCount = 0;
+      totalAttempts = 0;
+      timeLeft = currentLevel.maxTime;
+      updateRequirements();
+      updateDisplay();
+      updateStats();
+      const inputBox = document.getElementById("inputBox");
+      inputBox.value = "";
+      inputBox.focus();
+
+      // Set up keydown listener to capture keystrokes into the buffer
+      inputBox.onkeydown = function(e) {
+        // Only process if it's a single-character key (ignore control keys)
+        if (e.key.length === 1) {
+          inputBuffer.push(e.key);
+          // If not already processing, start processing the buffer immediately.
+          if (!processingBuffer) {
+            processBuffer();
+          }
+        }
+        // Prevent default behavior so that our input box only shows what we set.
+        e.preventDefault();
+      };
+
+      // Countdown timer for time left
+      countdownInterval = setInterval(() => {
+        timeLeft--;
+        updateStats();
+        if (timeLeft <= 0) {
+          clearInterval(countdownInterval);
+          alert(`Time's up! You did not finish within ${currentLevel.maxTime} seconds.`);
+          restartCompetition();
+        }
+      }, 1000);
+    }
+
+    // Process one character from the input buffer and provide immediate feedback.
+    function processBuffer() {
+      if (inputBuffer.length === 0) {
+        processingBuffer = false;
+        return;
+      }
+      processingBuffer = true;
+      const inputChar = inputBuffer.shift();
+      totalAttempts++;
+      
+      const inputBox = document.getElementById("inputBox");
+      // Show the typed character immediately.
+      inputBox.value = inputChar;
+      
+      if (inputChar === currentSentence[currentIndex]) {
+        correctCount++;
+      } else {
+        // Flash red for error indication.
+        document.getElementById("textDisplay").style.color = "red";
+        setTimeout(() => {
+          document.getElementById("textDisplay").style.color = "yellow";
+        }, 200);
+      }
+      
+      updateStats();
+
+      // After a brief delay, clear the input, update display and move to the next character.
+      setTimeout(() => {
+        inputBox.value = "";
+        currentIndex++;
+        updateDisplay();
+        
+        // Check if the sentence is complete.
+        if (currentIndex === currentSentence.length) {
+          clearInterval(countdownInterval);
+          let accuracy = Math.floor((correctCount / totalAttempts) * 100);
+          const currentLevel = levels[level];
+          
+          if (accuracy < currentLevel.minAccuracy) {
+            alert(`Level ${level + 1} failed! Minimum accuracy required is ${currentLevel.minAccuracy}%. Your accuracy was ${accuracy}%. Restarting from Level 1.`);
+            restartCompetition();
+          } else {
+            if (level < levels.length - 1) {
+              alert(`Level ${level + 1} Complete! Your time taken: ${currentLevel.maxTime - timeLeft}s, Accuracy: ${accuracy}%. Proceeding to next level.`);
+              level++;
+              startGameLevel();
+            } else {
+              document.getElementById("game").classList.remove("active");
+              document.getElementById("final").classList.add("active");
+              document.getElementById("finalStats").innerText = `Final Time Taken: ${levels[level].maxTime - timeLeft}s, Final Accuracy: ${accuracy}%`;
+            }
+          }
+        } else {
+          // Process the next character in the buffer after a very short delay (50ms).
+          setTimeout(processBuffer, 50);
+        }
+      }, 50);
+    }
+
+    // Update the display of the sentence with the current character highlighted.
+    function updateDisplay() {
+      let displayHTML = "";
+      for (let i = 0; i < currentSentence.length; i++) {
+        if (i === currentIndex) {
+          displayHTML += `<span class="current">${currentSentence[i]}</span>`;
+        } else {
+          displayHTML += currentSentence[i];
+        }
+      }
+      document.getElementById("textDisplay").innerHTML = displayHTML;
+    }
+
+    // Update the level requirements display.
+    function updateRequirements() {
+      const currentLevel = levels[level];
+      document.getElementById("requirements").innerHTML = 
+        `<p>Level ${level + 1}: Minimum Accuracy: ${currentLevel.minAccuracy}%, Maximum Time: ${currentLevel.maxTime}s</p>`;
+    }
+
+    // Update the stats (accuracy and time left).
+    function updateStats() {
+      let accuracy = totalAttempts > 0 ? Math.floor((correctCount / totalAttempts) * 100) : 100;
+      document.getElementById("score").innerText = `Accuracy: ${accuracy}%`;
+      document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+    }
+  </script>
+</body>
+</html>
