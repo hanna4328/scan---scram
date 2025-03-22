@@ -16,22 +16,18 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      position: relative;
     }
     #intro h1, #intro p {
       margin: 10px;
     }
-    .hidden-btn {
-      position: absolute;
-      bottom: 20%; /* Positioned at bottom left-middle */
-      left: 20%;
+    .start-btn {
       background-color: white;
       color: black;
       padding: 10px 20px;
       border: none;
       cursor: pointer;
-      display: none;
-      transition: border 0.3s ease;
+      font-size: 18px;
+      margin-top: 20px;
     }
     /* Game Section Styles */
     #game {
@@ -84,7 +80,7 @@
     /* Animation for correct selection */
     @keyframes correctFlash {
       0%   { border-color: white; }
-      50%  { border-color: #39FF14; } /* bright fluorescent green */
+      50%  { border-color: #39FF14; }
       100% { border-color: white; }
     }
     .correct {
@@ -93,7 +89,7 @@
     /* Animation for incorrect selection */
     @keyframes wrongFlash {
       0%   { border-color: white; }
-      50%  { border-color: #FF073A; } /* bright fluorescent red */
+      50%  { border-color: #FF073A; }
       100% { border-color: white; }
     }
     .incorrect {
@@ -109,48 +105,17 @@
   <!-- Intro Section -->
   <div id="intro">
     <h1>Welcome!</h1>
-    <p>Find the hidden button to start the puzzle.</p>
-    <button class="hidden-btn" onclick="showGame()">Start</button>
-    <script>
-      // Reveal the hidden button if the pointer (or touch) is near it.
-      function revealButton(event) {
-        let btn = document.querySelector(".hidden-btn");
-        let rect = btn.getBoundingClientRect();
-        let x, y;
-        if (event.touches && event.touches.length > 0) {
-          x = event.touches[0].clientX;
-          y = event.touches[0].clientY;
-        } else {
-          x = event.clientX;
-          y = event.clientY;
-        }
-        let distance = Math.hypot(x - (rect.left + rect.width / 2), y - (rect.top + rect.height / 2));
-        if (distance < 50) {
-          btn.style.display = "block";
-          // Give a slight visual indication: flash a yellow border.
-          btn.style.border = "3px solid yellow";
-          setTimeout(() => {
-            btn.style.border = "none";
-          }, 500);
-        }
-      }
-      document.body.addEventListener("mousemove", revealButton);
-      document.body.addEventListener("touchstart", revealButton);
-      document.body.addEventListener("touchmove", revealButton);
-      document.body.addEventListener("touchend", revealButton);
-      
-      function showGame() {
-        document.getElementById("intro").style.display = "none";
-        document.getElementById("game").style.display = "block";
-        initLevel(currentLevelIndex);
-      }
-    </script>
+    <p>This puzzle will test your knowledge of HTML elements by having you match them with their descriptions.</p>
+    <button class="start-btn" onclick="showGame()">Start Puzzle</button>
   </div>
 
   <!-- Game Section -->
   <div id="game">
     <h1>HTML Element Matching Puzzle - Level <span id="levelNumber"></span></h1>
-    <div id="instruction">Select one element from the left and its matching description from the right. If you choose incorrectly, your selections will reset!</div>
+    <div id="instruction">
+      Select one element from the left and its matching description from the right.<br>
+      If you choose incorrectly, your selections will reset!
+    </div>
     <div id="timerContainer">Time Left: <span id="timeLeft"></span> seconds</div>
     <div id="gameContainer">
       <div class="column" id="elementColumn"></div>
@@ -160,7 +125,7 @@
   </div>
 
   <script>
-    // Level Data (unchanged)
+    // Level Data
     const levels = [
       // Level 1: 6 pairs.
       {
@@ -235,11 +200,13 @@
       document.getElementById("message").innerText = "";
       document.getElementById("elementColumn").innerHTML = "";
       document.getElementById("descColumn").innerHTML = "";
+
       let elements = currentLevel.pairs.map(pair => ({ id: pair.id, value: pair.element }));
       let descriptions = currentLevel.pairs.map(pair => ({ id: pair.id, value: pair.description }));
       elements = shuffleArray(elements);
       descriptions = shuffleArray(descriptions);
       const boxColor = "#444";
+      
       elements.forEach(item => {
         const box = document.createElement("div");
         box.classList.add("box");
@@ -249,6 +216,7 @@
         box.onclick = () => selectElement(box);
         document.getElementById("elementColumn").appendChild(box);
       });
+      
       descriptions.forEach(item => {
         const box = document.createElement("div");
         box.classList.add("box");
@@ -258,6 +226,7 @@
         box.onclick = () => selectDescription(box);
         document.getElementById("descColumn").appendChild(box);
       });
+      
       timerInterval = setInterval(() => {
         timeLeft--;
         document.getElementById("timeLeft").innerText = timeLeft;
@@ -266,6 +235,7 @@
           resetLevel();
         }
       }, 1000);
+      
       selectedElementBox = null;
       selectedDescBox = null;
     }
