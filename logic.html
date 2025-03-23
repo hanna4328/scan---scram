@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOS Challenge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #222;
+            color: white;
+            padding: 20px;
+            transition: background-color 2s ease;
+        }
+        .grid {
+            display: grid;
+            gap: 5px;
+            margin: 20px auto;
+            justify-content: center;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+        .s { color: red; text-shadow: 0 0 5px red; }
+        .o { color: white; text-shadow: 0 0 5px white; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="intro">
+        <h1>Welcome to the SOS Challenge!</h1>
+        <p>Think fast and outsmart the AI! Can you form "SOS" before the computer does? Each level gets harder, and if you lose, the level restarts.</p>
+        <p>Complete all levels to reveal the secret code!</p>
+        <button onclick="startGame()">Start Challenge</button>
+    </div>
+    <div id="game-container" class="hidden">
+        <h1>SOS Challenge</h1>
+        <p>Form "SOS" before the AI does! Win all levels to reveal the secret code.</p>
+        <div id="game"></div>
+        <p id="message"></p>
+    </div>
+    <script>
+        let level = 1;
+        function startGame() {
+            document.getElementById("intro").classList.add("hidden");
+            document.getElementById("game-container").classList.remove("hidden");
+            createBoard(3);
+        }
+        function createBoard(size) {
+            let game = document.getElementById("game");
+            game.innerHTML = "";
+            game.style.gridTemplateColumns = `repeat(${size}, 60px)`;
+            game.style.gridTemplateRows = `repeat(${size}, 60px)`;
+            game.className = "grid";
+            
+            for (let i = 0; i < size * size; i++) {
+                let cell = document.createElement("div");
+                cell.className = "cell";
+                cell.onclick = () => playerMove(cell, size);
+                game.appendChild(cell);
+            }
+        }
+        function playerMove(cell, size) {
+            if (cell.textContent) return;
+            cell.textContent = Math.random() < 0.5 ? "S" : "O";
+            cell.classList.add(cell.textContent === "S" ? "s" : "o");
+            setTimeout(() => aiMove(size), 500);
+        }
+        function aiMove(size) {
+            let emptyCells = [...document.querySelectorAll(".cell")].filter(c => !c.textContent);
+            if (emptyCells.length === 0) return;
+            let choice = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            choice.textContent = Math.random() < 0.5 ? "S" : "O";
+            choice.classList.add(choice.textContent === "S" ? "s" : "o");
+            checkWin(size);
+        }
+        function checkWin(size) {
+            let cells = [...document.querySelectorAll(".cell")].map(c => c.textContent);
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size - 2; j++) {
+                    let rowIdx = i * size + j;
+                    let colIdx = j * size + i;
+                    if (cells[rowIdx] + cells[rowIdx + 1] + cells[rowIdx + 2] === "SOS" ||
+                        cells[colIdx] + cells[colIdx + size] + cells[colIdx + 2 * size] === "SOS") {
+                        document.getElementById("message").textContent = "You Win! Advancing to next level...";
+                        setTimeout(nextLevel, 2000);
+                        return;
+                    }
+                }
+            }
+            setTimeout(() => restartLevel(), 2000);
+        }
+        function restartLevel() {
+            document.getElementById("message").textContent = "You Lost! Restarting level...";
+            setTimeout(() => createBoard(level === 3 ? 4 : 3), 2000);
+        }
+        function nextLevel() {
+            if (level >= 3) {
+                document.getElementById("message").textContent = "Congratulations! The secret code is XOXOXO";
+            } else {
+                level++;
+                createBoard(level === 3 ? 4 : 3);
+            }
+        }
+    </script>
+</body>
+</html>

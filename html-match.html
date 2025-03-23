@@ -186,6 +186,12 @@
     let selectedElementBox = null;
     let selectedDescBox = null;
 
+    function showGame() {
+      document.getElementById("intro").style.display = "none";
+      document.getElementById("game").style.display = "block";
+      initLevel(currentLevelIndex);
+    }
+
     function resetLevel() {
       alert("Wrong match or time expired! Restarting level.");
       clearInterval(timerInterval);
@@ -312,4 +318,3 @@
   </script>
 </body>
 </html>
-
